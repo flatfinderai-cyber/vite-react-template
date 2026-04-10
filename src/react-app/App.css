@@ -231,6 +231,11 @@ select:focus {
 	border-color: #f07c2a;
 }
 
+select option {
+	background: #2a2a32;
+	color: #f2f0eb;
+}
+
 .form-error {
 	font-family: "Space Mono", monospace;
 	font-size: 0.66rem;
