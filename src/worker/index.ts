@@ -65,6 +65,31 @@ const insertIntoSupabaseTable = async (
 	return { response, errorPayload };
 };
 
+const checkEmailExistsInTable = async (
+	supabaseUrl: string,
+	supabaseKey: string,
+	table: string,
+	email: string,
+) => {
+	const response = await fetch(
+		`${supabaseUrl}/rest/v1/${table}?select=email&email=eq.${encodeURIComponent(email)}&limit=1`,
+		{
+			headers: {
+				apikey: supabaseKey,
+				Authorization: `Bearer ${supabaseKey}`,
+			},
+		},
+	);
+
+	if (!response.ok) {
+		const errorPayload = (await response.json().catch(() => null)) as SupabaseErrorPayload | null;
+		return { exists: false, response, errorPayload };
+	}
+
+	const rows = (await response.json().catch(() => [])) as Array<{ email: string }>;
+	return { exists: rows.length > 0, response, errorPayload: null as SupabaseErrorPayload | null };
+};
+
 const isMissingTableError = (status: number, payload: SupabaseErrorPayload | null) => {
 	return status === 404 || (payload?.code ? TABLE_NOT_FOUND_CODES.has(payload.code) : false);
 };
@@ -126,6 +151,51 @@ app.post("/api/waitlist", async (c) => {
 		bathrooms: body.bathrooms || null,
 		property_type: body.property_type || null,
 	};
+
+	// Enforce one-signup-per-email across both possible tables.
+	const waitlistDuplicateCheck = await checkEmailExistsInTable(
+		supabaseUrl,
+		supabaseKey,
+		"waitlist",
+		email,
+	);
+	if (waitlistDuplicateCheck.response.ok && waitlistDuplicateCheck.exists) {
+		return c.json({ error: "You're already on the list!" }, 409);
+	}
+	if (
+		!waitlistDuplicateCheck.response.ok &&
+		!isMissingTableError(waitlistDuplicateCheck.response.status, waitlistDuplicateCheck.errorPayload)
+	) {
+		const errorDetail = parseSupabaseError(waitlistDuplicateCheck.errorPayload);
+		return c.json(
+			{
+				error: `Could not validate existing email in Supabase. ${errorDetail}`,
+			},
+			500,
+		);
+	}
+
+	const betaDuplicateCheck = await checkEmailExistsInTable(
+		supabaseUrl,
+		supabaseKey,
+		"beta_signups",
+		email,
+	);
+	if (betaDuplicateCheck.response.ok && betaDuplicateCheck.exists) {
+		return c.json({ error: "You're already on the list!" }, 409);
+	}
+	if (
+		!betaDuplicateCheck.response.ok &&
+		!isMissingTableError(betaDuplicateCheck.response.status, betaDuplicateCheck.errorPayload)
+	) {
+		const errorDetail = parseSupabaseError(betaDuplicateCheck.errorPayload);
+		return c.json(
+			{
+				error: `Could not validate existing email in Supabase. ${errorDetail}`,
+			},
+			500,
+		);
+	}
 
 	// Primary write path: `waitlist` table (new schema).
 	const waitlistInsert = await insertIntoSupabaseTable(

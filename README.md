@@ -59,3 +59,4 @@ npm run deploy
 - `500` with `waitlist_table_missing`: Run the SQL migration in Supabase.
 - `500` with `waitlist_auth_error`: key is wrong for your table policy; set `SUPABASE_SERVICE_ROLE_KEY`.
 - `500` with `waitlist_insert_failed`: check table schema/constraints in Supabase response details.
+- `409` with `You're already on the list!`: email uniqueness is enforced globally; each email can sign up once.
