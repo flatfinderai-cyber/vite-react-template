@@ -11,7 +11,7 @@ Use this skill when you need to run, test, or debug this repository quickly in C
 3. If not logged in, authenticate:
    - `npx wrangler login`
 4. Optional non-interactive auth for automation:
-   - set `CLOUDFLARE_API_TOKEN` before deploy/check commands.
+   - set `CLOUDFLARE_API_TOKEN` before deploy commands.
 
 ## 2) Start the app (full-stack local dev)
 
@@ -74,7 +74,7 @@ Use when changing Worker config or preparing deployment.
 Workflow:
 1. Build:
    - `npm run build`
-2. High-signal preflight (requires auth/token):
+2. High-signal preflight:
    - `npm run check`
 3. Deploy when requested:
    - `npm run deploy`
@@ -82,7 +82,8 @@ Workflow:
    - `npx wrangler tail`
 
 Pass criteria:
-- `check` completes without deploy errors.
+- `check` completes without dry-run deploy errors.
+- Real deploys (`npm run deploy`) are authenticated and complete successfully.
 - Deployed Worker responds correctly for `/api/`.
 
 ## 4) Feature flags and environment mocking
@@ -108,7 +109,7 @@ Rule:
 3. Start `npm run dev`.
 4. Make smallest change in one code area.
 5. Run area-specific validation + `npm run build`.
-6. If deployment-related, run `npm run check` before `npm run deploy`.
+6. If deployment-related, run `npm run check` before `npm run deploy` (and ensure auth is ready for real deploys).
 
 ## 6) Keep this skill updated (runbook hygiene)
 
