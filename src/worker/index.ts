@@ -26,6 +26,47 @@ type WaitlistRequest = {
 	property_type?: string | null;
 };
 
+const TABLE_NOT_FOUND_CODES = new Set(["42P01", "PGRST205"]);
+
+type SupabaseErrorPayload = {
+	code?: string;
+	message?: string;
+	details?: string;
+	hint?: string;
+};
+
+const parseSupabaseError = (payload: SupabaseErrorPayload | null) => {
+	if (!payload) {
+		return "Unknown Supabase error.";
+	}
+	return [payload.message, payload.details, payload.hint].filter(Boolean).join(" ");
+};
+
+const insertIntoSupabaseTable = async (
+	supabaseUrl: string,
+	supabaseKey: string,
+	table: string,
+	payload: Record<string, unknown>,
+) => {
+	const response = await fetch(`${supabaseUrl}/rest/v1/${table}`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			apikey: supabaseKey,
+			Authorization: `Bearer ${supabaseKey}`,
+			Prefer: "return=minimal",
+		},
+		body: JSON.stringify(payload),
+	});
+
+	const errorPayload = (await response.json().catch(() => null)) as SupabaseErrorPayload | null;
+	return { response, errorPayload };
+};
+
+const isMissingTableError = (status: number, payload: SupabaseErrorPayload | null) => {
+	return status === 404 || (payload?.code ? TABLE_NOT_FOUND_CODES.has(payload.code) : false);
+};
+
 app.post("/api/waitlist", async (c) => {
 	let body: WaitlistRequest;
 	try {
@@ -67,39 +108,73 @@ app.post("/api/waitlist", async (c) => {
 		body.city === "other"
 			? body.city_other?.trim() || null
 			: body.city?.trim() || null;
+	const waitlistPayload = {
+		name,
+		email,
+		city,
+		moving_date: body.moving_date || null,
+		household_size: body.household_size || null,
+		budget: body.budget ?? null,
+		bedrooms: body.bedrooms || null,
+		bathrooms: body.bathrooms || null,
+		property_type: body.property_type || null,
+	};
 
-	const insertResponse = await fetch(`${supabaseUrl}/rest/v1/waitlist`, {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			apikey: supabaseServiceRoleKey,
-			Authorization: `Bearer ${supabaseServiceRoleKey}`,
-			Prefer: "return=minimal",
-		},
-		body: JSON.stringify({
-			name,
+	// Primary write path: `waitlist` table (new schema).
+	const waitlistInsert = await insertIntoSupabaseTable(
+		supabaseUrl,
+		supabaseServiceRoleKey,
+		"waitlist",
+		waitlistPayload,
+	);
+
+	let insertSucceeded = waitlistInsert.response.ok;
+
+	// Compatibility path: if the project still uses the old `beta_signups` table.
+	if (
+		!insertSucceeded &&
+		isMissingTableError(waitlistInsert.response.status, waitlistInsert.errorPayload)
+	) {
+		const betaPayload = {
 			email,
 			city,
-			moving_date: body.moving_date || null,
-			household_size: body.household_size || null,
-			budget: body.budget ?? null,
 			bedrooms: body.bedrooms || null,
-			bathrooms: body.bathrooms || null,
-			property_type: body.property_type || null,
-		}),
-	});
+			budget: body.budget ?? null,
+			created_at: new Date().toISOString(),
+		};
+		const betaInsert = await insertIntoSupabaseTable(
+			supabaseUrl,
+			supabaseServiceRoleKey,
+			"beta_signups",
+			betaPayload,
+		);
+		insertSucceeded = betaInsert.response.ok;
 
-	if (!insertResponse.ok) {
-		const payload = (await insertResponse.json().catch(() => null)) as
-			| { code?: string; message?: string }
-			| null;
-
-		if (payload?.code === "23505") {
+		if (!insertSucceeded) {
+			if (betaInsert.errorPayload?.code === "23505") {
+				return c.json({ error: "You're already on the list!" }, 409);
+			}
+			const errorDetail = parseSupabaseError(betaInsert.errorPayload);
+			console.error("beta_signups insert failed", betaInsert.errorPayload);
+			return c.json(
+				{
+					error: `Could not save signup in Supabase. ${errorDetail} Check table name and RLS insert policy.`,
+				},
+				500,
+			);
+		}
+	} else if (!insertSucceeded) {
+		if (waitlistInsert.errorPayload?.code === "23505") {
 			return c.json({ error: "You're already on the list!" }, 409);
 		}
-
-		console.error("waitlist insert failed", payload);
-		return c.json({ error: "Something went wrong while saving your signup." }, 500);
+		const errorDetail = parseSupabaseError(waitlistInsert.errorPayload);
+		console.error("waitlist insert failed", waitlistInsert.errorPayload);
+		return c.json(
+			{
+				error: `Could not save signup in Supabase. ${errorDetail} Check API key and RLS insert policy.`,
+			},
+			500,
+		);
 	}
 
 	const resendApiKey = c.env.RESEND_API_KEY;

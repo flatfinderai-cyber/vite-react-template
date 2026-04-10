@@ -11,6 +11,7 @@ This repo now contains:
 1. Open your Supabase project.
 2. Go to SQL Editor.
 3. Run `supabase_migration.sql`.
+4. If your existing table is named `beta_signups`, this API now supports that too.
 
 ## 2) Environment setup (required before form submission works)
 
@@ -47,3 +48,9 @@ Then deploy:
 ```bash
 npm run deploy
 ```
+
+## Troubleshooting quick checks
+
+- `500` with `waitlist_table_missing`: Run the SQL migration in Supabase.
+- `500` with `waitlist_auth_error`: key is wrong for your table policy; set `SUPABASE_SERVICE_ROLE_KEY`.
+- `500` with `waitlist_insert_failed`: check table schema/constraints in Supabase response details.
