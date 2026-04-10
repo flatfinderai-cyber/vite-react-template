@@ -35,6 +35,8 @@ Common local URLs:
 
 If port `5173` is busy, Vite will usually choose another port. Use the URL printed in the terminal instead of assuming the default.
 
+When checking root HTML pages with `curl`, use `curl -L` so redirects are followed. In local Vite dev, requests like `/flatfinder-landing.html` may be normalized to `/flatfinder-landing`.
+
 ## Cloudflare login and remote-only commands
 
 Local development does not require Cloudflare login for:
@@ -127,6 +129,7 @@ Recommended workflow:
    - `/beta-signup.html`
    - `/flatfinder-plan.html`
    - `/flatfinder_launch_readiness_2026.html`
+   - For terminal checks, prefer `curl -L` because Vite may redirect `.html` routes to extensionless paths
 3. Validate the page-specific behavior:
    - `flatfinder-landing.html`: hero loads, CTA links are correct, layout still renders cleanly
    - `beta-signup.html`: plan selection, step progression, modal open/close, validation states, and submit behavior
