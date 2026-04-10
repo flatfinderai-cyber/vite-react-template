@@ -208,8 +208,7 @@ function App() {
 										<option value="">Select your city</option>
 										<option value="toronto">Toronto</option>
 										<option value="vancouver">Vancouver</option>
-										<option value="calgary">Calgary</option>
-										<option value="montreal">Montreal</option>
+										<option value="paris">Paris</option>
 										<option value="other">Other (specify below)</option>
 									</select>
 									{showOtherCity ? (
