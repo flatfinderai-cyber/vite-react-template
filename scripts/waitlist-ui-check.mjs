@@ -10,7 +10,7 @@ const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 try {
-	await page.goto(baseUrl, { waitUntil: "networkidle" });
+	await page.goto(`${baseUrl}/flatfinder-landing.html`, { waitUntil: "networkidle" });
 	await page.click('button:has-text("Get Early Access")');
 	await page.waitForSelector(".modal-overlay.open");
 
