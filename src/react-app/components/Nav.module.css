@@ -1,0 +1,78 @@
+.nav {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 48px;
+	background: linear-gradient(
+		to bottom,
+		rgba(26, 26, 30, 0.95) 0%,
+		transparent 100%
+	);
+	backdrop-filter: blur(8px);
+}
+
+.logo {
+	font-family: "Bebas Neue", sans-serif;
+	font-size: 1.4rem;
+	letter-spacing: 3px;
+	color: var(--white) !important;
+	text-decoration: none;
+}
+
+.logo span {
+	color: var(--orange);
+}
+
+.links {
+	display: flex;
+	gap: 32px;
+	list-style: none;
+	align-items: center;
+}
+
+.links a {
+	font-family: "Space Mono", monospace;
+	font-size: 0.7rem;
+	letter-spacing: 2px;
+	text-transform: uppercase;
+	color: var(--grey);
+	text-decoration: none;
+	transition: color 0.2s;
+}
+
+.links a:hover {
+	color: var(--orange);
+}
+
+.cta {
+	background: var(--orange) !important;
+	color: #111 !important;
+	padding: 8px 20px;
+	border-radius: var(--radius);
+	font-weight: 700 !important;
+	transition: background 0.2s !important;
+}
+
+.cta:hover {
+	background: var(--orange-hover) !important;
+}
+
+@media (max-width: 768px) {
+	.nav {
+		padding: 16px 20px;
+	}
+
+	.links {
+		gap: 16px;
+	}
+
+	.links a {
+		font-size: 0.6rem;
+		letter-spacing: 1px;
+	}
+}

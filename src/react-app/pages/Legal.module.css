@@ -1,0 +1,97 @@
+.container {
+	max-width: 720px;
+	margin: 0 auto;
+	padding: 120px 24px 60px;
+}
+
+.container h1 {
+	font-family: "Bebas Neue", sans-serif;
+	font-size: 3rem;
+	letter-spacing: 2px;
+	color: var(--white);
+	margin-bottom: 4px;
+}
+
+.subtitle {
+	color: var(--grey);
+	font-size: 1rem;
+	margin-bottom: 4px;
+}
+
+.updated {
+	font-family: "Space Mono", monospace;
+	font-size: 0.7rem;
+	color: var(--grey);
+	letter-spacing: 1px;
+	margin-bottom: 48px;
+}
+
+.container section {
+	margin-bottom: 36px;
+}
+
+.container h2 {
+	font-family: "DM Sans", sans-serif;
+	font-size: 1.15rem;
+	font-weight: 600;
+	color: var(--white);
+	margin-bottom: 12px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid var(--border);
+}
+
+.container p {
+	color: var(--grey-light);
+	font-size: 0.9rem;
+	line-height: 1.8;
+	margin-bottom: 12px;
+}
+
+.container ul {
+	list-style: none;
+	margin: 0 0 16px 0;
+}
+
+.container li {
+	padding: 6px 0;
+	font-size: 0.9rem;
+	color: var(--grey-light);
+	line-height: 1.7;
+}
+
+.container li::before {
+	content: "→ ";
+	color: var(--orange);
+	font-weight: 700;
+}
+
+.container a {
+	color: var(--orange);
+	text-decoration: underline;
+}
+
+.container a:hover {
+	color: var(--orange-hover);
+}
+
+.copyright {
+	margin-top: 60px;
+	padding-top: 24px;
+	border-top: 1px solid var(--border);
+	text-align: center;
+}
+
+.copyright p {
+	font-size: 0.75rem;
+	color: var(--grey);
+}
+
+@media (max-width: 768px) {
+	.container {
+		padding: 80px 16px 40px;
+	}
+
+	.container h1 {
+		font-size: 2.2rem;
+	}
+}
