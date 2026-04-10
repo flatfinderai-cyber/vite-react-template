@@ -20,6 +20,9 @@ This repo now contains:
    - `SUPABASE_URL` **or** `NEXT_PUBLIC_SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
 3. Optional: set `RESEND_API_KEY` + `FROM_EMAIL` for confirmation emails.
+4. Health check your config:
+   - `GET /api/waitlist/health`
+   - It reports whether URL/key are detected and which Supabase host is being used.
 
 ## 3) Which page to use
 
@@ -34,6 +37,8 @@ npm run dev
 ```
 
 Open `http://localhost:5173`.
+
+Note: `npm run dev` and `npm run build` automatically sync `flatfinder-landing.html` into `public/` so deploy always includes your latest landing page edits.
 
 ## 5) Deploy
 

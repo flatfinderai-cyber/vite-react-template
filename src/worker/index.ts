@@ -5,6 +5,8 @@ type Bindings = Env & {
 	SUPABASE_SERVICE_ROLE_KEY?: string;
 	SUPABASE_ANON_KEY?: string;
 	NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
+	SUPABASE_KEY?: string;
+	SUPABASE_TOKEN?: string;
 	RESEND_API_KEY?: string;
 	FROM_EMAIL?: string;
 };
@@ -67,6 +69,17 @@ const isMissingTableError = (status: number, payload: SupabaseErrorPayload | nul
 	return status === 404 || (payload?.code ? TABLE_NOT_FOUND_CODES.has(payload.code) : false);
 };
 
+const resolveSupabaseConfig = (env: Bindings) => {
+	const supabaseUrl = (env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL)?.replace(/\/$/, "");
+	const supabaseKey =
+		env.SUPABASE_SERVICE_ROLE_KEY ||
+		env.SUPABASE_ANON_KEY ||
+		env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+		env.SUPABASE_KEY ||
+		env.SUPABASE_TOKEN;
+	return { supabaseUrl, supabaseKey };
+};
+
 app.post("/api/waitlist", async (c) => {
 	let body: WaitlistRequest;
 	try {
@@ -86,15 +99,9 @@ app.post("/api/waitlist", async (c) => {
 		return c.json({ error: "Please enter a valid email." }, 400);
 	}
 
-	const supabaseUrl = (
-		c.env.SUPABASE_URL || c.env.NEXT_PUBLIC_SUPABASE_URL
-	)?.replace(/\/$/, "");
-	const supabaseServiceRoleKey =
-		c.env.SUPABASE_SERVICE_ROLE_KEY ||
-		c.env.SUPABASE_ANON_KEY ||
-		c.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+	const { supabaseUrl, supabaseKey } = resolveSupabaseConfig(c.env);
 
-	if (!supabaseUrl || !supabaseServiceRoleKey) {
+	if (!supabaseUrl || !supabaseKey) {
 		return c.json(
 			{
 				error:
@@ -123,7 +130,7 @@ app.post("/api/waitlist", async (c) => {
 	// Primary write path: `waitlist` table (new schema).
 	const waitlistInsert = await insertIntoSupabaseTable(
 		supabaseUrl,
-		supabaseServiceRoleKey,
+		supabaseKey,
 		"waitlist",
 		waitlistPayload,
 	);
@@ -144,7 +151,7 @@ app.post("/api/waitlist", async (c) => {
 		};
 		const betaInsert = await insertIntoSupabaseTable(
 			supabaseUrl,
-			supabaseServiceRoleKey,
+			supabaseKey,
 			"beta_signups",
 			betaPayload,
 		);
@@ -207,6 +214,21 @@ app.post("/api/waitlist", async (c) => {
 	}
 
 	return c.json({ success: true }, 201);
+});
+
+app.get("/api/waitlist/health", async (c) => {
+	const { supabaseUrl, supabaseKey } = resolveSupabaseConfig(c.env);
+	const usingServiceRole = Boolean(c.env.SUPABASE_SERVICE_ROLE_KEY);
+	const urlHost = supabaseUrl ? new URL(supabaseUrl).host : null;
+
+	return c.json({
+		ok: Boolean(supabaseUrl && supabaseKey),
+		urlConfigured: Boolean(supabaseUrl),
+		keyConfigured: Boolean(supabaseKey),
+		usingServiceRole,
+		supabaseHost: urlHost,
+		expectedTables: ["waitlist", "beta_signups"],
+	});
 });
 
 export default app;
