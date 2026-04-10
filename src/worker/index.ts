@@ -1,7 +1,10 @@
 import { Hono } from "hono";
 type Bindings = Env & {
 	SUPABASE_URL?: string;
+	NEXT_PUBLIC_SUPABASE_URL?: string;
 	SUPABASE_SERVICE_ROLE_KEY?: string;
+	SUPABASE_ANON_KEY?: string;
+	NEXT_PUBLIC_SUPABASE_ANON_KEY?: string;
 	RESEND_API_KEY?: string;
 	FROM_EMAIL?: string;
 };
@@ -42,14 +45,19 @@ app.post("/api/waitlist", async (c) => {
 		return c.json({ error: "Please enter a valid email." }, 400);
 	}
 
-	const supabaseUrl = c.env.SUPABASE_URL?.replace(/\/$/, "");
-	const supabaseServiceRoleKey = c.env.SUPABASE_SERVICE_ROLE_KEY;
+	const supabaseUrl = (
+		c.env.SUPABASE_URL || c.env.NEXT_PUBLIC_SUPABASE_URL
+	)?.replace(/\/$/, "");
+	const supabaseServiceRoleKey =
+		c.env.SUPABASE_SERVICE_ROLE_KEY ||
+		c.env.SUPABASE_ANON_KEY ||
+		c.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 	if (!supabaseUrl || !supabaseServiceRoleKey) {
 		return c.json(
 			{
 				error:
-					"Waitlist is not configured yet. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY.",
+					"Waitlist is not configured yet. Set SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY).",
 			},
 			500,
 		);

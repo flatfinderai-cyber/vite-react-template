@@ -16,11 +16,16 @@ This repo now contains:
 
 1. Copy `.dev.vars.example` to `.dev.vars`.
 2. Fill in your real values:
-   - `SUPABASE_URL`
+   - `SUPABASE_URL` **or** `NEXT_PUBLIC_SUPABASE_URL`
    - `SUPABASE_SERVICE_ROLE_KEY`
 3. Optional: set `RESEND_API_KEY` + `FROM_EMAIL` for confirmation emails.
 
-## 3) Run locally
+## 3) Which page to use
+
+- Use `http://localhost:5173/flatfinder-landing.html` for the FlatFinder landing page experience.
+- It is now wired directly to the modal waitlist and `POST /api/waitlist`.
+
+## 4) Run locally
 
 ```bash
 npm install
@@ -29,7 +34,7 @@ npm run dev
 
 Open `http://localhost:5173`.
 
-## 4) Deploy
+## 5) Deploy
 
 Before deploy, add the same secrets in your Cloudflare Worker environment:
 - `SUPABASE_URL`

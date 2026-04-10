@@ -14,7 +14,7 @@ try {
 	await page.click('button:has-text("Get Early Access")');
 	await page.waitForSelector(".modal-overlay.open");
 
-	const cityOptions = await page.$$eval("label select option", (options) =>
+	const cityOptions = await page.$$eval("#wl-city option", (options) =>
 		options.map((option) => ({ value: option.getAttribute("value"), text: option.textContent?.trim() })),
 	);
 	await page.selectOption('select:near(:text("City"))', "other");
@@ -22,11 +22,15 @@ try {
 	await page.fill('input[placeholder="Enter your city"]', "Ottawa");
 	await page.fill('input[placeholder="Jane Smith"]', "UI Script Demo");
 	await page.fill('input[placeholder="jane@email.com"]', testEmail);
+	await page.fill("#wl-date", "2026-08");
+	await page.selectOption("#wl-household", "2");
+	await page.fill("#wl-budget", "2750");
+	await page.selectOption("#wl-beds", "1");
+	await page.selectOption("#wl-baths", "1");
+	await page.selectOption("#wl-type", "condo");
 
 	const cityOptionStyles = await page.evaluate(() => {
-		const citySelect = Array.from(document.querySelectorAll("select")).find((el) =>
-			el.closest("label")?.textContent?.includes("City"),
-		);
+		const citySelect = document.querySelector("#wl-city");
 		const option = citySelect?.querySelector("option[value='paris']");
 		if (!option) return null;
 		const style = window.getComputedStyle(option);
