@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlatFinder™ — Launch Plan A/B/C</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --black:#0a0a0a;--white:#f5f5f0;
+  --orange:#f97316;--orange-dim:#c85c0d;
+  --a:#22c55e;--b:#f97316;--c:#3b82f6;
+  --a-dim:rgba(34,197,94,.12);--b-dim:rgba(249,115,22,.12);--c-dim:rgba(59,130,246,.12);
+  --border:rgba(255,255,255,.08);--card:rgba(255,255,255,.04)
+}
+body{background:var(--black);color:var(--white);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden}
+
+/* HEADER */
+header{border-bottom:1px solid var(--border);padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.08em}
+.logo span{color:var(--orange)}
+.logo-sub{font-family:'Space Mono',monospace;font-size:9px;opacity:.4;letter-spacing:.15em;text-transform:uppercase;margin-top:2px}
+.status-pill{font-family:'Space Mono',monospace;font-size:10px;background:rgba(249,115,22,.15);border:1px solid rgba(249,115,22,.3);color:var(--orange);padding:5px 12px;border-radius:100px;letter-spacing:.08em}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);padding:0 32px;position:sticky;top:0;background:rgba(10,10,10,.95);backdrop-filter:blur(12px);z-index:10}
+.tab{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:16px 24px;cursor:pointer;border-bottom:2px solid transparent;opacity:.4;transition:all .2s;white-space:nowrap}
+.tab.active{opacity:1;color:var(--orange);border-bottom-color:var(--orange)}
+.tab:hover:not(.active){opacity:.7}
+
+/* LEGEND */
+.legend{display:flex;gap:24px;padding:20px 32px;border-bottom:1px solid var(--border)}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px;opacity:.7}
+.dot{width:8px;height:8px;border-radius:50%}
+.dot-a{background:var(--a)}
+.dot-b{background:var(--b)}
+.dot-c{background:var(--c)}
+.legend-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.06em}
+
+/* CONTENT */
+.content{display:none;padding:32px}
+.content.active{display:block}
+
+/* PLAN GRID */
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.plan-col{display:flex;flex-direction:column;gap:8px}
+
+/* PLAN HEADER */
+.plan-header{padding:16px 20px;border-radius:10px 10px 0 0;border:1px solid}
+.plan-header.a{background:var(--a-dim);border-color:rgba(34,197,94,.25)}
+.plan-header.b{background:var(--b-dim);border-color:rgba(249,115,22,.25)}
+.plan-header.c{background:var(--c-dim);border-color:rgba(59,130,246,.25)}
+.plan-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.08em}
+.plan-name.a{color:var(--a)}
+.plan-name.b{color:var(--b)}
+.plan-name.c{color:var(--c)}
+.plan-desc{font-size:11px;opacity:.6;margin-top:3px;line-height:1.4}
+.plan-badge{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;padding:3px 8px;border-radius:4px}
+.plan-badge.a{background:rgba(34,197,94,.2);color:var(--a)}
+.plan-badge.b{background:rgba(249,115,22,.2);color:var(--b)}
+.plan-badge.c{background:rgba(59,130,246,.2);color:var(--c)}
+
+/* ITEMS */
+.items{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px 16px;transition:border-color .2s}
+.item:hover.a-item{border-color:rgba(34,197,94,.2)}
+.item:hover.b-item{border-color:rgba(249,115,22,.2)}
+.item:hover.c-item{border-color:rgba(59,130,246,.2)}
+.item-label{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;opacity:.4;margin-bottom:6px}
+.item-label.a{color:var(--a)}
+.item-label.b{color:var(--b)}
+.item-label.c{color:var(--c)}
+.item-text{font-size:13px;line-height:1.5;opacity:.85}
+.item-sub{font-size:11px;opacity:.45;margin-top:4px;font-style:italic}
+.tag{display:inline-block;font-family:'Space Mono',monospace;font-size:8px;letter-spacing:.08em;padding:2px 6px;border-radius:3px;margin-top:6px;text-transform:uppercase}
+.tag-green{background:rgba(34,197,94,.15);color:var(--a)}
+.tag-orange{background:rgba(249,115,22,.15);color:var(--b)}
+.tag-blue{background:rgba(59,130,246,.15);color:var(--c)}
+.tag-red{background:rgba(239,68,68,.15);color:#ef4444}
+.tag-yellow{background:rgba(234,179,8,.15);color:#eab308}
+
+/* SEPARATOR */
+.sep{grid-column:1/-1;border:none;border-top:1px solid var(--border);margin:8px 0}
+
+/* MONTH ITEMS */
+.month-row{display:grid;grid-template-columns:120px 1fr 1fr 1fr;gap:16px;margin-bottom:16px;align-items:start}
+.month-label{padding-top:6px}
+.month-name{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:.06em;line-height:1;color:var(--orange)}
+.month-sub{font-family:'Space Mono',monospace;font-size:9px;letter-spacing:.08em;opacity:.4;margin-top:3px;text-transform:uppercase}
+.month-col{}
+
+/* ACTIVATION BOX */
+.activation{margin:32px 0 0;background:rgba(249,115,22,.06);border:1px solid rgba(249,115,22,.2);border-radius:12px;padding:24px 28px}
+.activation-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:.08em;color:var(--orange);margin-bottom:16px}
+.activation-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px}
+.act-plan{}
+.act-name{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:.1em;margin-bottom:10px}
+.act-name.a{color:var(--a)}
+.act-name.b{color:var(--b)}
+.act-name.c{color:var(--c)}
+.step{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.step-num{font-family:'Space Mono',monospace;font-size:9px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;font-weight:700}
+.step-num.a{background:rgba(34,197,94,.2);color:var(--a)}
+.step-num.b{background:rgba(249,115,22,.2);color:var(--b)}
+.step-num.c{background:rgba(59,130,246,.2);color:var(--c)}
+.step-text{font-size:12px;line-height:1.5;opacity:.8}
+.step-text strong{color:var(--white);opacity:1}
+
+@media(max-width:800px){
+  .grid,.activation-grid,.month-row{grid-template-columns:1fr}
+  .month-label{padding-top:0}
+  header{flex-direction:column;gap:12px;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Flat<span>Finder</span>™ <span style="font-size:14px;opacity:.5">— Launch Roadmap</span></div>
+    <div class="logo-sub">Beta Season · Back-to-School 2026</div>
+  </div>
+  <div class="status-pill">⚡ Plan A · B · C</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('day')">📅 Day-by-Day</div>
+  <div class="tab" onclick="switchTab('week')">📆 Week-by-Week</div>
+  <div class="tab" onclick="switchTab('month')">🗓 Month-by-Month</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="dot dot-a"></div><span class="legend-label">Plan A — Supabase (Full Backend)</span></div>
+  <div class="legend-item"><div class="dot dot-b"></div><span class="legend-label">Plan B — Formspree (No-Code, 5 min)</span></div>
+  <div class="legend-item"><div class="dot dot-c"></div><span class="legend-label">Plan C — EmailJS (Zero Backend)</span></div>
+</div>
+
+<!-- DAY BY DAY -->
+<div class="content active" id="tab-day">
+  <div class="grid">
+
+    <!-- PLAN HEADERS -->
+    <div class="plan-col">
+      <div class="plan-header a">
+        <div class="plan-name a">Plan A</div>
+        <div class="plan-desc">Supabase + Resend. Proper database, confirmation email, row-level security. The full build.</div>
+        <div class="plan-badge a">⚙ Full Backend · Best Long-Term</div>
+      </div>
+    </div>
+    <div class="plan-col">
+      <div class="plan-header b">
+        <div class="plan-name b">Plan B</div>
+        <div class="plan-desc">Formspree. Paste one URL into the code. Works in 5 minutes. Free tier = 50 submissions/mo.</div>
+        <div class="plan-badge b">🚀 Fastest to Live · Recommended Now</div>
+      </div>
+    </div>
+    <div class="plan-col">
+      <div class="plan-header c">
+        <div class="plan-name c">Plan C</div>
+        <div class="plan-desc">EmailJS. Client-side only. No accounts except EmailJS. Free 200 emails/mo. Zero server.</div>
+        <div class="plan-badge c">☁ Zero Server · Pure Fallback</div>
+      </div>
+    </div>
+
+    <hr class="sep">
+
+    <!-- DAY 1 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Day 1</div>
+        <div class="item-text">Create Supabase account → New project (ca-central-1) → Create <code style="font-size:11px;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:3px">beta_signups</code> table</div>
+        <div class="tag tag-yellow">⏱ 30–60 min</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Day 1</div>
+        <div class="item-text">Go to formspree.io → Sign up free → Create new form → Copy your endpoint URL</div>
+        <div class="tag tag-green">⚡ 5 min. Done.</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Day 1</div>
+        <div class="item-text">Sign up at emailjs.com → Create email service (Gmail) → Create email template → Copy public key</div>
+        <div class="tag tag-yellow">⏱ 15–20 min</div>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Day 2</div>
+        <div class="item-text">Add Supabase JS client to beta-signup.html. On submit, INSERT row into table. Test with real data.</div>
+        <div class="item-sub">Requires ANON key from Supabase dashboard → Settings → API</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Day 2</div>
+        <div class="item-text">Open beta-signup.html → Paste your Formspree endpoint URL into the submit handler (one line). Done.</div>
+        <div class="tag tag-green">Files already prepared ↓</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Day 2</div>
+        <div class="item-text">Add EmailJS SDK script tag → Add sendEmail() call on form submit → Test with your address</div>
+        <div class="item-sub">Sends to flat@flatfinder.io on every signup</div>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Day 3 (Same for All)</div>
+        <div class="item-text">Fix the landing page CTA link → Deploy → Test the full journey: Landing → Signup → Submit → Confirm</div>
+        <div class="tag tag-green">Landing page fix: delivered below</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Day 3</div>
+        <div class="item-text">Same as Plan A: Fix landing page CTA → Test full flow → Submit a real entry → Check your inbox</div>
+        <div class="tag tag-green">Everything delivered below</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Day 3</div>
+        <div class="item-text">Same CSS fix + landing page fix → Test full flow → Confirm email arrives at flat@flatfinder.io</div>
+        <div class="item-sub">No dashboard to check — all in your inbox</div>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Day 4</div>
+        <div class="item-text">Set up Resend.com for transactional email → Connect to Supabase Auth triggers → User gets confirmation email</div>
+        <div class="tag tag-yellow">⏱ 1–2 hrs</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Day 4</div>
+        <div class="item-text">Log into Formspree dashboard → Customize notification email template → Add auto-reply to signees</div>
+        <div class="tag tag-green">Auto-reply is built into Formspree</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Day 4</div>
+        <div class="item-text">Create a Google Sheet → Use Zapier free tier to log each EmailJS send to the sheet → Manual tracking</div>
+        <div class="item-sub">No database = manual list management</div>
+      </div>
+    </div>
+
+    <!-- DAY 5–7 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Days 5–7</div>
+        <div class="item-text">Add Row Level Security to Supabase → Enable email confirmations → Full QA sprint → Deploy to Vercel</div>
+        <div class="tag tag-orange">Ship it 🚀</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Days 5–7</div>
+        <div class="item-text">Full QA → Share with 3 trusted beta testers → Get feedback → Already done. Ship it.</div>
+        <div class="tag tag-green">Simplest path to live ✓</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Days 5–7</div>
+        <div class="item-text">Full QA → Build Google Sheet tracking dashboard → Share with testers. Ship it.</div>
+        <div class="tag tag-orange">Upgrade to B or A at Month 2</div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+</div><!-- /day -->
+
+<!-- WEEK BY WEEK -->
+<div class="content" id="tab-week">
+  <div class="grid">
+
+    <div class="plan-col">
+      <div class="plan-header a">
+        <div class="plan-name a">Plan A — Supabase</div>
+        <div class="plan-desc">Full backend. Each week builds on a permanent foundation.</div>
+      </div>
+    </div>
+    <div class="plan-col">
+      <div class="plan-header b">
+        <div class="plan-name b">Plan B — Formspree</div>
+        <div class="plan-desc">Move fast, collect users, upgrade when ready.</div>
+      </div>
+    </div>
+    <div class="plan-col">
+      <div class="plan-header c">
+        <div class="plan-name c">Plan C — EmailJS</div>
+        <div class="plan-desc">Manual operations. Cheapest now, most work later.</div>
+      </div>
+    </div>
+
+    <hr class="sep">
+
+    <!-- WEEK 1 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Week 1 — The Fix</div>
+        <div class="item-text">Supabase connected. Landing page → Signup working. Email confirmation live. Database capturing every signup.</div>
+        <div class="tag tag-green">✓ Pages fixed + backend live</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Week 1 — The Fix</div>
+        <div class="item-text">Formspree endpoint pasted in. Landing page → Signup working. Emails arriving. Zero backend.</div>
+        <div class="tag tag-green">✓ Live in &lt;1 day. Ship it.</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Week 1 — The Fix</div>
+        <div class="item-text">EmailJS firing. Emails to flat@flatfinder.io. Google Sheet tracking. Landing page fixed.</div>
+        <div class="tag tag-blue">✓ Functional. Minimal.</div>
+      </div>
+    </div>
+
+    <!-- WEEK 2 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Week 2 — Landlord Intake</div>
+        <div class="item-text">Build the digital Baseline PRD form (Sections 1–6). Store responses in Supabase. Crown/Council verification gate logic drafted.</div>
+        <div class="tag tag-yellow">⏱ High effort. High reward.</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Week 2 — Waitlist Growth</div>
+        <div class="item-text">Share the live signup link publicly. Target student Facebook groups, Reddit, Discord. Log Formspree submissions to a spreadsheet.</div>
+        <div class="tag tag-green">Focus: get to 100 signups</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Week 2 — Manual Outreach</div>
+        <div class="item-text">Personally email every signup. Book 1:1 calls with 5 beta users. Get real feedback on what they need most.</div>
+        <div class="item-sub">Turn inbox into a CRM manually</div>
+      </div>
+    </div>
+
+    <!-- WEEK 3 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Week 3 — Benny MVP</div>
+        <div class="item-text">Anthropic API integrated. Benny answers basic renter questions. System prompt in env variable. Session memory via Supabase.</div>
+        <div class="tag tag-orange">Keystone blocker — this unlocks everything</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Week 3 — Beta Outreach</div>
+        <div class="item-text">Book calls with 10 signups via Cal.com. Validate top 3 pain points. Build a short survey on Typeform.</div>
+        <div class="tag tag-green">Research = your real product</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Week 3 — Upgrade Plan</div>
+        <div class="item-text">Assess: is Email-only sustainable? If 20+ signups → migrate to Plan B (Formspree). If 50+ → consider Plan A.</div>
+        <div class="tag tag-blue">Decision point: stay or upgrade</div>
+      </div>
+    </div>
+
+    <!-- WEEK 4 -->
+    <div class="items">
+      <div class="item a-item">
+        <div class="item-label a">Week 4 — Internal Sprint</div>
+        <div class="item-text">Full end-to-end test. Benny + signup + landlord intake + confirmation. Fix everything that's broken. Deploy.</div>
+        <div class="tag tag-orange">First beta-ready build</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item b-item">
+        <div class="item-label b">Week 4 — Beta Begins</div>
+        <div class="item-text">Send personal invite to top 20 signups. Get them using the site. Collect testimonials for launch credibility.</div>
+        <div class="tag tag-green">✓ Real users. Real feedback.</div>
+      </div>
+    </div>
+    <div class="items">
+      <div class="item c-item">
+        <div class="item-label c">Week 4 — Analysis</div>
+        <div class="item-text">Compile survey results. Build a simple feature priority doc. Share with 5 power users for validation.</div>
+        <div class="item-sub">This feeds Month 2 decisions</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MONTH BY MONTH -->
+<div class="content" id="tab-month">
+  <div style="max-width:1200px">
+
+    <div class="month-row" style="margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div></div>
+      <div style="text-align:center"><span class="plan-badge a" style="justify-content:center">Plan A — Supabase</span></div>
+      <div style="text-align:center"><span class="plan-badge b" style="justify-content:center">Plan B — Formspree</span></div>
+      <div style="text-align:center"><span class="plan-badge c" style="justify-content:center">Plan C — EmailJS</span></div>
+    </div>
+
+    <!-- MONTH NOW -->
+    <div class="month-row">
+      <div class="month-label"><div class="month-name">NOW</div><div class="month-sub">This week</div></div>
+      <div class="item a-item">
+        <div class="item-text">Supabase table + client. Landing page CTA fixed. Colour→color CSS bug fixed. Email confirmation.</div>
+        <div class="tag tag-yellow">⏱ 1–2 days setup</div>
+      </div>
+      <div class="item b-item">
+        <div class="item-text">Paste one Formspree URL. Landing page CTA fixed. CSS bug fixed. <strong>Live in hours.</strong></div>
+        <div class="tag tag-green">✓ Fastest. Start here.</div>
+      </div>
+      <div class="item c-item">
+        <div class="item-text">EmailJS SDK added. Landing page CTA fixed. CSS bug fixed. Emails flow to flat@flatfinder.io.</div>
+        <div class="tag tag-blue">⏱ ~20 min setup</div>
+      </div>
+    </div>
+
+    <!-- MONTH 1 -->
+    <div class="month-row">
+      <div class="month-label"><div class="month-name">Month 1</div><div class="month-sub">Apr 2026</div></div>
+      <div class="item a-item">
+        <div class="item-text">Benny MVP (Anthropic API). Landlord intake form digital (Sections 1–6). Renter profile stored in Supabase.</div>
+        <div class="tag tag-orange">Foundation locked in</div>
+      </div>
+      <div class="item b-item">
+        <div class="item-text">100 waitlist signups target. 10 beta user 1:1 calls. Validate top 3 pain points. Document findings.</div>
+        <div class="tag tag-green">Research over features</div>
+      </div>
+      <div class="item c-item">
+        <div class="item-text">50 waitlist signups. Migrate to Plan B (Formspree). Keep manual outreach as the differentiator.</div>
+        <div class="tag tag-blue">Upgrade: C → B</div>
+      </div>
+    </div>
+
+    <!-- MONTH 2 -->
+    <div class="month-row">
+      <div class="month-label"><div class="month-name">Month 2</div><div class="month-sub">May 2026</div></div>
+      <div class="item a-item">
+        <div class="item-text">Listing search v1. Anti-Gatekeeping Algorithm prototype. Crown/Council verification gate live.</div>
+        <div class="tag tag-orange">Core product differentiator</div>
+      </div>
+      <div class="item b-item">
+        <div class="item-text">Benny MVP (Anthropic API) — this is your unlock. Basic listing curation (manual). Upgrade Formspree if needed.</div>
+        <div class="tag tag-yellow">Benny is still the key</div>
+      </div>
+      <div class="item c-item">
+        <div class="item-text">Plan B now live. Start building Benny. Partner with 1 landlord for manual listings. 100 signups target.</div>
+        <div class="tag tag-blue">Catch-up month</div>
+      </div>
+    </div>
+
+    <!-- MONTH 3 -->
+    <div class="month-row">
+      <div class="month-label"><div class="month-name">Month 3</div><div class="month-sub">Jun 2026</div></div>
+      <div class="item a-item">
+        <div class="item-text">Stripe integrated. Max/Ultra feature gating. Demand letter generator. City legal template library live.</div>
+        <div class="tag tag-orange">Revenue-ready</div>
+      </div>
+      <div class="item b-item">
+        <div class="item-text">Anti-Gatekeeping Algorithm v1. Demand letter template. Listing search v1 (even if manual-curated).</div>
+        <div class="tag tag-green">Product building sprint</div>
+      </div>
+      <div class="item c-item">
+        <div class="item-text">Benny live. Listing search v1. Stripe if revenue needed. Consider Plan A migration.</div>
+        <div class="tag tag-blue">Accelerate or commit to A</div>
+      </div>
+    </div>
+
+    <!-- MONTH 4 -->
+    <div class="month-row">
+      <div class="month-label"><div class="month-name">Month 4</div><div class="month-sub">Jul 2026</div></div>
+      <div class="item a-item">
+        <div class="item-text">QA sprint. Accessibility audit. Mobile testing. Performance. Benny tuning on real conversations.</div>
+        <div class="tag tag-green">Polish everything</div>
+      </div>
+      <div class="item b-item">
+        <div class="item-text">Stripe. QA. Mobile. Accessibility. Agent compliance badges. Migrate off Formspree to Supabase (Plan A).</div>
+        <div class="tag tag-yellow">Upgrade: B → A</div>
+      </div>
+      <div class="item c-item">
+        <div class="item-text">QA sprint. Migrate to full Plan A by now. No longer viable to stay on manual email management.</div>
+        <div class="tag tag-red">Must be on A or B by Month 4</div>
+      </div>
+    </div>
+
+    <!-- MONTH 5 -->
+    <div class="month-row">
+      <div class="month-label"><div class="month-name">Month 5</div><div class="month-sub">Aug 2026</div></div>
+      <div class="item a-item" style="grid-column:2/-1">
+        <div class="item-text" style="font-size:15px"><strong>All paths converge here.</strong> Soft beta launch with full waitlist. Press outreach. Student renter targeting. September 2026 public launch.</div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <div class="tag tag-green">🎓 Back-to-School</div>
+          <div class="tag tag-orange">🚀 Public Launch</div>
+          <div class="tag tag-blue">🇨🇦 Canadian Markets First</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ACTIVATION GUIDE -->
+  <div class="activation">
+    <div class="activation-title">⚡ Activation — What to do right now</div>
+    <div class="activation-grid">
+      <div class="act-plan">
+        <div class="act-name a">PLAN A — SUPABASE</div>
+        <div class="step"><div class="step-num a">1</div><div class="step-text">Go to <strong>supabase.com</strong> → New project → Region: <strong>ca-central-1</strong></div></div>
+        <div class="step"><div class="step-num a">2</div><div class="step-text">Create table <code style="font-size:10px;background:rgba(255,255,255,.08);padding:1px 4px;border-radius:3px">beta_signups</code> with columns: id, email, plan, city, bedrooms, budget, created_at</div></div>
+        <div class="step"><div class="step-num a">3</div><div class="step-text">Copy your <strong>anon public key</strong> from Settings → API</div></div>
+        <div class="step"><div class="step-num a">4</div><div class="step-text">Paste key into the fixed beta-signup.html (delivered below). Replace <code style="font-size:10px;background:rgba(255,255,255,.08);padding:1px 4px;border-radius:3px">YOUR_SUPABASE_URL</code></div></div>
+        <div class="step"><div class="step-num a">5</div><div class="step-text">Set up <strong>Resend.com</strong> → verify flat@flatfinder.io → get API key → enable in Supabase Auth</div></div>
+      </div>
+      <div class="act-plan">
+        <div class="act-name b">PLAN B — FORMSPREE (START HERE)</div>
+        <div class="step"><div class="step-num b">1</div><div class="step-text">Go to <strong>formspree.io</strong> → Sign up free (no credit card)</div></div>
+        <div class="step"><div class="step-num b">2</div><div class="step-text">Click <strong>+ New Form</strong> → Name it "FlatFinder Beta Signup"</div></div>
+        <div class="step"><div class="step-num b">3</div><div class="step-text">Copy your endpoint URL — looks like <code style="font-size:10px;background:rgba(255,255,255,.08);padding:1px 4px;border-radius:3px">https://formspree.io/f/abcdefgh</code></div></div>
+        <div class="step"><div class="step-num b">4</div><div class="step-text">Open the fixed beta-signup.html below → Find <code style="font-size:10px;background:rgba(255,255,255,.08);padding:1px 4px;border-radius:3px">YOUR_FORMSPREE_ID</code> → Replace with your ID</div></div>
+        <div class="step"><div class="step-num b">5</div><div class="step-text">Done. Test it. You'll get an email at flat@flatfinder.io for every signup.</div></div>
+      </div>
+      <div class="act-plan">
+        <div class="act-name c">PLAN C — EMAILJS</div>
+        <div class="step"><div class="step-num c">1</div><div class="step-text">Go to <strong>emailjs.com</strong> → Sign up → Connect Gmail service</div></div>
+        <div class="step"><div class="step-num c">2</div><div class="step-text">Create email template: Subject "New FlatFinder Signup" → Map fields (email, plan, city)</div></div>
+        <div class="step"><div class="step-num c">3</div><div class="step-text">Copy your <strong>Public Key</strong> + <strong>Service ID</strong> + <strong>Template ID</strong></div></div>
+        <div class="step"><div class="step-num c">4</div><div class="step-text">Add EmailJS SDK to beta-signup.html + call <code style="font-size:10px;background:rgba(255,255,255,.08);padding:1px 4px;border-radius:3px">emailjs.send()</code> on submit</div></div>
+        <div class="step"><div class="step-num c">5</div><div class="step-text">Every signup → email to flat@flatfinder.io. No database. You manage the list manually.</div></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /month -->
+
+<script>
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',['day','week','month'][i]===name)
+  });
+  document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+</script>
+</body>
+</html>
