@@ -65,6 +65,44 @@ const insertIntoSupabaseTable = async (
 	return { response, errorPayload };
 };
 
+const getMissingColumnFromError = (payload: SupabaseErrorPayload | null) => {
+	const message = payload?.message ?? "";
+	const match = message.match(/Could not find the '([^']+)' column/i);
+	return match?.[1] ?? null;
+};
+
+const insertIntoWaitlistWithSchemaFallback = async (
+	supabaseUrl: string,
+	supabaseKey: string,
+	payload: Record<string, unknown>,
+) => {
+	const mutablePayload: Record<string, unknown> = { ...payload };
+	let lastResult = await insertIntoSupabaseTable(
+		supabaseUrl,
+		supabaseKey,
+		"waitlist",
+		mutablePayload,
+	);
+
+	// Backward compatibility: if the project has an older waitlist schema,
+	// remove unknown columns and retry until it can insert or a non-schema error occurs.
+	while (!lastResult.response.ok) {
+		const missingColumn = getMissingColumnFromError(lastResult.errorPayload);
+		if (!missingColumn || !(missingColumn in mutablePayload)) {
+			return lastResult;
+		}
+		delete mutablePayload[missingColumn];
+		lastResult = await insertIntoSupabaseTable(
+			supabaseUrl,
+			supabaseKey,
+			"waitlist",
+			mutablePayload,
+		);
+	}
+
+	return lastResult;
+};
+
 const checkEmailExistsInTable = async (
 	supabaseUrl: string,
 	supabaseKey: string,
@@ -198,10 +236,9 @@ app.post("/api/waitlist", async (c) => {
 	}
 
 	// Primary write path: `waitlist` table (new schema).
-	const waitlistInsert = await insertIntoSupabaseTable(
+	const waitlistInsert = await insertIntoWaitlistWithSchemaFallback(
 		supabaseUrl,
 		supabaseKey,
-		"waitlist",
 		waitlistPayload,
 	);
 
